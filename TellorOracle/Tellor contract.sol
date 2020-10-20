@@ -11,11 +11,74 @@ import "../contracts/interfaces/EIP2362Interface.sol";
 * This contracts creates for easy integration to the Tellor System
 * by allowing smart contracts to read data off Tellor
 */
-contract UsingTellor is EIP2362Interface{
-    address payable public tellorStorageAddress;
-    address public oracleIDDescriptionsAddress;
-    TellorMaster _tellorm;
-    OracleIDDescriptions descriptions;
+
+contract BtcPrice1HourAgoContract is UsingTellor {
+
+  uint256 btcPrice;
+  uint256 btcRequetId = 2;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function getBtcPriceBefore1HourAgo() public view returns (uint256) {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    // Get the price that is older than an hour (looking back at most 60 values)
+    (_didGet, _value, _timestamp) = getDataBefore(btcRequetId, now - 1 hours, 60, 0);
+
+    if(_didGet){
+      btcPrice = _value;
+    }
+
+
+  }
+}
+
+contract EthPrice1HourAgoContract is UsingTellor {
+
+  uint256 EthPrice;
+  uint256 ethRequetId = 2;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function getEthPriceBefore1HourAgo() public view returns (uint256) {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    // Get the price that is older than an hour (looking back at most 60 values)
+    (_didGet, _value, _timestamp) = getDataBefore(ethRequetId, now - 1 hours, 60, 0);
+
+    if(_didGet){
+      ethPrice = _value;
+    }
+}
+}
+
+contract BchPrice1HourAgoContract is UsingTellor {
+
+  uint256 bchPrice;
+  uint256 bchRequetId = 2;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function getBchPriceBefore1HourAgo() public view returns (uint256) {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    // Get the price that is older than an hour (looking back at most 60 values)
+    (_didGet, _value, _timestamp) = getDataBefore(bchRequetId, now - 1 hours, 60, 0);
+
+    if(_didGet){
+      bchPrice = _value;
+    }
+
+    
+  }
+
+
 
     event NewDescriptorSet(address _descriptorSet);
 
@@ -106,4 +169,7 @@ contract UsingTellor is EIP2362Interface{
         }
         return (false, 0, 0);
     }
+}
+}
+}
 }
