@@ -1,13 +1,138 @@
 
-//dapp: https://etherscan.io/dapp/0x1603557c3f7197df2ecded659ad04fa72b1e1114#readContract
-//
-
 pragma solidity >=0.5.0;
 
+import 'usingtellor/contracts/UsingTellor.sol';
+import 'USCDToken/usdc.sol';
+import 'tbtcdeposit.sol';
+
+contract MyContract is UsingTellor{
+ ...
+    constructor(address _userContract) UsingTellor(_userContract) public{}
+}
+
+contract BtcPrice1HourAgoContract is UsingTellor {
+
+  uint256 btcPrice;
+  uint256 btcRequetId = 2;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function getBtcPriceBefore1HourAgo() public view returns (uint256) {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    // Get the price that is older than an hour (looking back at most 60 values)
+    (_didGet, _value, _timestamp) = getDataBefore(btcRequetId, now - 1 hours, 60, 0);
+
+    if(_didGet){
+      btcPrice = _value;
+    }
+}
+}
+}
+}
+
+contract EthPrice1HourAgoContract is UsingTellor {
+
+  uint256 EthPrice;
+  uint256 ethRequetId = 1;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function getEthPriceBefore1HourAgo() public view returns (uint256) {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    // Get the price that is older than an hour (looking back at most 60 values)
+    (_didGet, _value, _timestamp) = getDataBefore(ethRequetId, now - 1 hours, 60, 0);
+
+    if(_didGet){
+      ethPrice = _value;
+    }
+}
+}
+
+contract TrbPrice1HourAgoContract is UsingTellor {
+
+  uint256 trbPrice;
+  uint256 trbRequetId = 43;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function getTrbPriceBefore1HourAgo() public view returns (uint256) {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    // Get the price that is older than an hour (looking back at most 60 values)
+    (_didGet, _value, _timestamp) = getDataBefore(trbRequetId, now - 1 hours, 60, 0);
+
+    if(_didGet){
+      trbPrice = _value;
+    }
+  }
+}
+
+contract usdcPriceContract is UsingTellor {
+
+  uint256 usdcPrice;
+  uint256 usdcRequetId = 25;
+
+  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
+
+  function setUsdcPrice() public {
+    bool _didGet;
+    uint _timestamp;
+    uint _value;
+
+    (_didGet, usdcPrice, _timestamp) = getCurrentValue(usdcRequetId);
+  }
+
+
+
+        function readTellorValue(uint256 _tellorID) external view returns (uint256) {
+    //Helper function to get latest available value for that Id
+    (bool ifRetrieve, uint256 value, uint256 _timestampRetrieved) = getCurrentValue(_tellorID);
+    if(!ifRetrieve) return 0;
+    return value;
+  }
+
+
+  function readTellorValueBefore(uint256 _tellorId, uint256 _timestamp) external returns (uint256, uint256){
+    //Helper Function to get a value before the given timestamp
+    (bool _ifRetrieve, uint256 _value, uint256 _timestampRetrieved)  = getDataBefore(_tellorId, _timestamp);
+    if(!_ifRetrieve) return (0,0);
+    return (_value, _timestampRetrieved);
+  |
+
+
+    uint256 _count = _tellorm.getNewValueCountbyRequestId(_requestId);
+        if (_count > 0) {
+            for (uint256 i = _count - _offset; i < _count -_offset + _limit; i++) {
+                uint256 _time = _tellorm.getTimestampbyRequestIDandIndex(_requestId, i - 1);
+                if(_value > 0 && _time > _timestamp){
+                    return(true, _value, _timestampRetrieved);
+                }
+                else if (_time > 0 && _time <= _timestamp && _tellorm.isInDispute(_requestId,_time) == false) {
+                    _value = _tellorm.retrieveData(_requestId, _time);
+                    _timestampRetrieved = _time;
+                    if(i == _count){
+                        return(true, _value, _timestampRetrieved);
+                    }
+                }
+            }
+        }
+        return (false, 0, 0);
+    }
+}
+}
+
 contract UniswapExchangeInterface {
-    // Address of ERC20 token sold on this exchange
+    
     function tokenAddress() external view returns (address token);
-    // Address of Uniswap Factory
+    
     function factoryAddress() external view returns (address factory);
     // Provide Liquidity
     function addLiquidity(uint256 min_liquidity, uint256 max_tokens, uint256 deadline) external payable returns (uint256);
@@ -22,22 +147,22 @@ contract UniswapExchangeInterface {
     function ethToTokenTransferInput(uint256 min_tokens, uint256 deadline, address recipient) external payable returns (uint256  tokens_bought);
     function ethToTokenSwapOutput(uint256 tokens_bought, uint256 deadline) external payable returns (uint256  eth_sold);
     function ethToTokenTransferOutput(uint256 tokens_bought, uint256 deadline, address recipient) external payable returns (uint256  eth_sold);
-    // Trade ERC20 to ETH
+    
     function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256  eth_bought);
     function tokenToEthTransferInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline, address recipient) external returns (uint256  eth_bought);
     function tokenToEthSwapOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline) external returns (uint256  tokens_sold);
     function tokenToEthTransferOutput(uint256 eth_bought, uint256 max_tokens, uint256 deadline, address recipient) external returns (uint256  tokens_sold);
-    // Trade ERC20 to ERC20
+    
     function tokenToTokenSwapInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address token_addr) external returns (uint256  tokens_bought);
     function tokenToTokenTransferInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address recipient, address token_addr) external returns (uint256  tokens_bought);
     function tokenToTokenSwapOutput(uint256 tokens_bought, uint256 max_tokens_sold, uint256 max_eth_sold, uint256 deadline, address token_addr) external returns (uint256  tokens_sold);
     function tokenToTokenTransferOutput(uint256 tokens_bought, uint256 max_tokens_sold, uint256 max_eth_sold, uint256 deadline, address recipient, address token_addr) external returns (uint256  tokens_sold);
-    // Trade ERC20 to Custom Pool
+    
     function tokenToExchangeSwapInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address exchange_addr) external returns (uint256  tokens_bought);
     function tokenToExchangeTransferInput(uint256 tokens_sold, uint256 min_tokens_bought, uint256 min_eth_bought, uint256 deadline, address recipient, address exchange_addr) external returns (uint256  tokens_bought);
     function tokenToExchangeSwapOutput(uint256 tokens_bought, uint256 max_tokens_sold, uint256 max_eth_sold, uint256 deadline, address exchange_addr) external returns (uint256  tokens_sold);
     function tokenToExchangeTransferOutput(uint256 tokens_bought, uint256 max_tokens_sold, uint256 max_eth_sold, uint256 deadline, address recipient, address exchange_addr) external returns (uint256  tokens_sold);
-    // ERC20 comaptibility for liquidity tokens
+
     bytes32 public name;
     bytes32 public symbol;
     uint256 public decimals;
@@ -47,11 +172,11 @@ contract UniswapExchangeInterface {
     function allowance(address _owner, address _spender) external view returns (uint256);
     function balanceOf(address _owner) external view returns (uint256);
     function totalSupply() external view returns (uint256);
-    // Never use
+    
     function setup(address token_addr) external;
 }
 
-interface ERC20 {
+interface tBTC {
     function totalSupply() public view returns (uint supply);
     function balanceOf(address _owner) public view returns (uint balance);
     function transfer(address _to, uint _value) public returns (bool success);
@@ -66,28 +191,28 @@ interface ERC20 {
 
 
 
-/// @title Kyber Network interface
-interface KyberNetworkProxyInterface {
+/// 1inch interface
+interface inchNetworkProxyInterface {
     function maxGasPrice() public view returns(uint);
     function getUserCapInWei(address user) public view returns(uint);
-    function getUserCapInTokenWei(address user, ERC20 token) public view returns(uint);
+    function getUserCapInTokenWei(address user, TBTC token) public view returns(uint);
     function enabled() public view returns(bool);
     function info(bytes32 id) public view returns(uint);
 
-    function getExpectedRate(ERC20 src, ERC20 dest, uint srcQty) public view
+    function getExpectedRate(TBTC src, TBTC dest, uint srcQty) public view
         returns (uint expectedRate, uint slippageRate);
 
-    function tradeWithHint(ERC20 src, uint srcAmount, ERC20 dest, address destAddress, uint maxDestAmount,
+    function tradeWithHint(TBTC src, uint srcAmount, TBTC dest, address destAddress, uint maxDestAmount,
         uint minConversionRate, address walletId, bytes hint) public payable returns(uint);
 
-    function swapEtherToToken(ERC20 token, uint minRate) public payable returns (uint);
+    function swapEtherToToken(TBTC token, uint minRate) public payable returns (uint);
 
-    function swapTokenToEther(ERC20 token, uint tokenQty, uint minRate) public returns (uint);
+    function swapTokenToEther(TBTC token, uint tokenQty, uint minRate) public returns (uint);
 
 
 }
 
-interface OrFeedInterface {
+interface TellorInterface {
   function getExchangeRate ( string fromSymbol, string toSymbol, string venue, uint256 amount ) external view returns ( uint256 );
   function getTokenDecimalCount ( address tokenAddress ) external view returns ( uint256 );
   function getTokenAddress ( string symbol ) external view returns ( address );
@@ -101,10 +226,10 @@ interface OrFeedInterface {
 
 contract Trader{
 
-    ERC20 constant internal ETH_TOKEN_ADDRESS = ERC20(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee);
-    KyberNetworkProxyInterface public proxy = KyberNetworkProxyInterface(0x818E6FECD516Ecc3849DAf6845e3EC868087B755);
-    OrFeedInterface orfeed= OrFeedInterface(0x8316b082621cfedab95bf4a44a1d4b64a6ffc336);
-    address daiAddress = 0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359;
+    TBTC constant internal ETH_TOKEN_ADDRESS = TBTC(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee);
+    InchNetworkProxyInterface public proxy = InchNetworkProxyInterface();
+    TellorInterface liquidity= TellorInterface();
+    address usdcAddress = 0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359;
     bytes  PERM_HINT = "PERM";
     address owner;
 
@@ -120,33 +245,29 @@ contract Trader{
 
     constructor(){
      owner = msg.sender;
-    }
+ }
 
-   function swapEtherToToken (KyberNetworkProxyInterface _kyberNetworkProxy, ERC20 token, address destAddress) internal{
+   function swapEtherToToken (InchNetworkProxyInterface _inchNetworkProxy, TBTC token, address destAddress) internal{
 
     uint minRate;
-    (, minRate) = _kyberNetworkProxy.getExpectedRate(ETH_TOKEN_ADDRESS, token, msg.value);
+    (, minRate) = _inchNetworkProxy.getExpectedRate(ETH_TOKEN_ADDRESS, token, msg.value);
 
-    //will send back tokens to this contract's address
-    uint destAmount = _kyberNetworkProxy.swapEtherToToken.value(msg.value)(token, minRate);
+    uint destAmount = _inchNetworkProxy.swapEtherToToken.value(msg.value)(token, minRate);
 
-    //send received tokens to destination address
+    
    require(token.transfer(destAddress, destAmount));
 
 
 
     }
 
-    function swapTokenToEther1 (KyberNetworkProxyInterface _kyberNetworkProxy, ERC20 token, uint tokenQty, address destAddress) internal returns (uint) {
+    function swapTokenToEther1 (InchNetworkProxyInterface _inchNetworkProxy, TBTC token, uint tokenQty, address destAddress) internal returns (uint) {
 
         uint minRate =1;
-        //(, minRate) = _kyberNetworkProxy.getExpectedRate(token, ETH_TOKEN_ADDRESS, tokenQty);
+        
 
-        // Check that the token transferFrom has succeeded
+        
         token.transferFrom(msg.sender, this, tokenQty);
-
-        // Mitigate ERC20 Approve front-running attack, by initially setting
-        // allowance to 0
 
        token.approve(proxy, 0);
 
@@ -154,21 +275,20 @@ contract Trader{
        token.approve(address(proxy), tokenQty);
 
 
-       uint destAmount = proxy.tradeWithHint(ERC20(daiAddress), tokenQty, ERC20(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee), this, 8000000000000000000000000000000000000000000000000000000000000000, 0, 0x0000000000000000000000000000000000000004, PERM_HINT);
+       uint destAmount = proxy.tradeWithHint(TBTC(usdcAddress), tokenQty, TBTC(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee), this, 8000000000000000000000000000000000000000000000000000000000000000, 0, 0x0000000000000000000000000000000000000004, PERM_HINT);
 
     return destAmount;
       //uint destAmount = proxy.swapTokenToEther(token, tokenQty, minRate);
 
-        // Send received ethers to destination address
-     //  destAddress.transfer(destAmount);
+
     }
 
-     function kyberToUniSwapArb(address fromAddress, address uniSwapContract, uint theAmount) public payable onlyOwner returns (bool){
+     function inchToUniSwapArb(address fromAddress, address uniSwapContract, uint theAmount) public payable onlyOwner returns (bool){
 
         address theAddress = uniSwapContract;
         UniswapExchangeInterface usi = UniswapExchangeInterface(theAddress);
 
-        ERC20 address1 = ERC20(fromAddress);
+        TBTC address1 = TBTC(fromAddress);
 
        uint ethBack = swapTokenToEther1(proxy, address1 , theAmount, msg.sender);
 
@@ -187,22 +307,22 @@ contract Trader{
     function withdrawETHAndTokens() onlyOwner{
 
         msg.sender.send(address(this).balance);
-         ERC20 daiToken = ERC20(daiAddress);
-        uint256 currentTokenBalance = daiToken.balanceOf(this);
-        daiToken.transfer(msg.sender, currentTokenBalance);
+         TBTC usdcToken = TBTC(usdcAddress);
+        uint256 currentTokenBalance = usdcToken.balanceOf(this);
+        usdcToken.transfer(msg.sender, currentTokenBalance);
 
     }
 
 
 
-    function getKyberSellPrice() constant returns (uint256){
-       uint256 currentPrice =  orfeed.getExchangeRate("ETH", "DAI", "SELL-KYBER-EXCHANGE", 1000000000000000000);
+    function getInchSellPrice() constant returns (uint256){
+       uint256 currentPrice =  liquidity.getExchangeRate("ETH", "USDC", "SELL-Inch-EXCHANGE", 1000000000000000000);
         return currentPrice;
     }
 
 
      function getUniswapBuyPrice() constant returns (uint256){
-       uint256 currentPrice =  orfeed.getExchangeRate("ETH", "DAI", "BUY-UNISWAP-EXCHANGE", 1000000000000000000);
+       uint256 currentPrice =  liquidity.getExchangeRate("TBTC", "USDC", "BUY-UNISWAP-EXCHANGE", 1000000000000000000);
         return currentPrice;
     }
 
